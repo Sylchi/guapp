@@ -2,17 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-.container {
-  width: 7em;
-  height: 7em;
-  position: relative;
-}
-
 .button {
-  position: absolute;
   cursor: pointer;
-  width: 100%;
-  height: 100%;
+  width: 125px;
+  height: 125px;
   border-radius: 50%;
   border: 4px solid #090909;
   background-color: transparent;

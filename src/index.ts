@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Notification, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, Tray, Menu, nativeImage } from 'electron';
 import { io } from 'socket.io-client';
 import net from 'node:net';
 import { updateElectronApp } from 'update-electron-app';
@@ -56,20 +56,19 @@ let quitting = false;
 const createWindow = (): void => {
   // Create the browser window.
   win = new BrowserWindow({
-    height: 300,
-    width: 300,
+    height: 365,
+    width: 311,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
-  win.setMenu(null)
-  win.setMenuBarVisibility(false);
+  if(process.env.NODE_ENV !== 'development') {
+    win.setMenu(null)
+    win.setMenuBarVisibility(false);
+  }
 
   // and load the index.html of the app.
   win.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
-  // Open the DevTools.
-  win.webContents.openDevTools();
 
   win.on('close', (event) => {
     if (quitting) {
@@ -102,6 +101,7 @@ app.on('ready', () => {
   ]);
   tray.setToolTip("Proxy Client");
   tray.setContextMenu(contextMenu);
+  tray.on("click", () => win.show())
 });
 
 app.on('activate', () => {

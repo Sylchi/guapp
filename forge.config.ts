@@ -42,6 +42,7 @@ const config: ForgeConfig = {
           owner: 'Sylchi',
           name: 'proxy-client'
         },
+        force: true,
         prerelease: true
       }
     }

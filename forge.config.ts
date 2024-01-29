@@ -13,9 +13,12 @@ import { spawn } from 'child_process';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: 'src/assets/guapp_icon.ico',
   },
   rebuildConfig: {},
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+  makers: [new MakerSquirrel({
+    iconUrl: 'https://raw.githubusercontent.com/Sylchi/guapp/main/src/assets/guapp_icon.ico'
+  }), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
   plugins: [
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
@@ -41,7 +44,7 @@ const config: ForgeConfig = {
       config: {
         repository: {
           owner: 'Sylchi',
-          name: 'proxy-client'
+          name: 'guapp'
         },
         force: true,
         prerelease: false

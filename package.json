@@ -1,12 +1,12 @@
 {
-  "name": "proxy-client",
-  "productName": "proxy-client",
-  "version": "0.0.4",
+  "name": "guapp",
+  "productName": "guapp",
+  "version": "0.0.5",
   "description": "Share your network resources to make money",
   "main": ".webpack/main",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sylchi/proxy-client.git"
+    "url": "https://github.com/Sylchi/guapp.git"
   },
   "scripts": {
     "start": "electron-forge start",
@@ -54,14 +54,13 @@
     "typescript": "~4.5.4"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.18",
     "auto-launch": "^5.0.6",
+    "babel-preset-solid": "^1.8.12",
     "child_process": "^1.0.2",
     "electron-json-storage": "^4.6.0",
     "electron-squirrel-startup": "^1.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "socket.io-client": "^4.7.3",
+    "solid-js": "^1.8.12",
     "update-electron-app": "^3.0.0"
   }
 }

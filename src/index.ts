@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } from 'electron';
+import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, shell } from 'electron';
 import { io } from 'socket.io-client';
 import net from 'node:net';
 import { updateElectronApp } from 'update-electron-app';
@@ -32,16 +32,22 @@ let quitting = false;
 const createWindow = (): void => {
   // Create the browser window.
   win = new BrowserWindow({
-    height: 365,
-    width: 311,
+    icon: 'src/assets/guapp_icon.ico',
+    height: 403,
+    width: 361,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
-  if(process.env.NODE_ENV !== 'development') {
+
     win.setMenu(null)
     win.setMenuBarVisibility(false);
-  }
+  
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   // and load the index.html of the app.
   win.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
@@ -70,30 +76,30 @@ console.log("got settings", settings)
 
 const connectSocket = () => {
   socket = io("http://command.wtfproxy.com:9988", {
-  extraHeaders: {
-    "x-proxy-client-version": pkg.version
-  }
-});
+    extraHeaders: {
+      "x-guapp-version": pkg.version
+    }
+  });
 
-socket.on("gateway", async ({ host, port, head, connectionId }) => {
-  console.log(host, port, head, connectionId);
-  try {
-    const svrSocket = net.connect(port, host);
-    svrSocket.on("data", data => {
-      console.log("serverdata", data);
-      socket.emit(`data:${connectionId}`, data)
-    })
-    console.log(connectionId)
-    socket.on(`data:${connectionId}`, (data) => {
-      console.log("clientdata", data)
-      svrSocket.write(data)
-    })
-    svrSocket.write(head);
-    socket.emit(`data:${connectionId}`,`HTTP/1.0 200 Connection Established\r\nProxy-agent: wtfproxy-tunnel (v1.0)\r\n\r\n`);
-  } catch (err) {
-    console.error(err)
-  }
-});
+  socket.on("gateway", async ({ host, port, head, connectionId }) => {
+    console.log(host, port, head, connectionId);
+    try {
+      const svrSocket = net.connect(port, host);
+      svrSocket.on("data", data => {
+        console.log("serverdata", data);
+        socket.emit(`data:${connectionId}`, data)
+      })
+      console.log(connectionId)
+      socket.on(`data:${connectionId}`, (data) => {
+        console.log("clientdata", data)
+        svrSocket.write(data)
+      })
+      svrSocket.write(head);
+      socket.emit(`data:${connectionId}`,`HTTP/1.0 200 Connection Established\r\nProxy-agent: guapp (v1.0)\r\n\r\n`);
+    } catch (err) {
+      console.error(err)
+    }
+  });
 }
 
 
@@ -138,14 +144,13 @@ app.on('ready', () => {
   createWindow();
   ipcMain.handle('client:toggle', handleClientToggle)
   ipcMain.handle('autoboot:toggle', handleAutobootToggle)
-  const icon =  nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAUQSURBVFhHrVddbBRVFP7uvTM7s93p/nSzLZTS0lIxiIgE0UIlAQNREuXJ8qyJJiaamPiAD8bwqNFIjAkaY/yJUR+qL0ZNMCSKYjCBAIolTQSkUBZatu1ud+dnd3Z2r2e2g292Z6rf5uzuvfece757z8/O4r/g+OGHh44dHukKhisCDz4jQUrJSLioF7ayxen7/XGwFBmRCQTOxJWPH1/fFa++bvDi26fffLBnpSRWcgP8+teHuhVz8puMYQ1nDWczm5v89uLRg4lgPRIiEbhzen79i/eSWfVuI1FCKi2R1Jxt5tT376zkFiLfwLW3escShjig6zXocQ+6DiS0BnRee/rkS6lHA7XQiETg1yM79JhwX9PiKhRpQ6U5X2K0S1y4iKFxRI6PiZZySEQicPP3uaekMNYKVUAQAd+TQpeu0i6akPA8tvGNT04fXNIOh0gxe/bV4xNDvLRpIGFCMacArwLTqaNgMdyw4yjINCp65pfvPnxuV2DSFqEJHHz52JZcV/dvq3JZpI0EKjZQb0qYVRdly0LFWoRjFeE589K05wd//OiFa4HpsggdAsG1/bqmQVUUGjEYahkDxhX0xS9BYxQOoYALyg1VYwKx/UtW7RGaADke9Z0rQiChlJBwfkbx6nl4MxMY1k5D4zVwTuRawkcDs7YITYALtlmQc8E5elMVXPpjGk7Zg1WqYyFfxIYeF4z7aSmgcH7vklV7hCIwNjYuBBdrODnnnKFatTB7q4Ab03nczM9gvlCkamiAMUopEsb4QGDaFqEIdPSqnap0/IprZe1sUaC7L4mF0hxMu4Tc2iSuzEpaW8ppFW4qbFcMRaCLu7Vd6gdQ6gutscMHkezfjpG9I3hgzwiKyiZUWQ+tSCTqs9jb+ZVLtyFbym0QisCB5CG5o+tsI+VOko9mK9tj2VGU9X0oiN1gqa1LVy8b6MUkdq+e9MbHW32qLUIRWDs8OKpzU2TYX9T1nGCWI6YbUGIddG56EbEObqFbzSMd94xt9iPbAsVlEYqAjtpONMmBzCOTLiM3yEg4sv0cmTUc6R6GdI7mjDIy6gI0+nFIxNxQpRiKAIO3xT9hzLuNerkEs+TBrDRgW03YNn3aHhyzhlhtASmlQgRiUIW8LzBfFqEIcOkNea5slm9IzJidsGyXsr8Gq1qDQ1J1qnCcGq5XkijNkD5TGxyN9YH5sghVKoUvR3fP/3T52qXPu87mVvVl3DVDKHEDjqrD9RqQ1BfEwgxY/jJu10v5va+wnf2b1g0kn/jhZLDFvyIUAR9SQpx4bHCPmM6+2+God8mr0y3jOr07JBVKRLtbmVA22M88eXL2DBVFc8lyeUQiIE1kUcRo5VzH+7fOITd1lENkgKEXm8hk3In0Ae95aogXkEY5LIFQOfAP/Hqj4Hausuu9222s6zSxLmeif4+NdL9XpdM0yXmoBnQHUQhI2r7BdNgwYWoesJr+kvSQcJNWqyhJgZqca508NIloBJKoSwVlWJj2nwWNzfRAupHiuEhOPUxR77MoSEQtPCKFgOJap65UIqvzdAsuv4c28H/3CjQycIE1YZJOg+T/v4FgU48oLKIPp4jGn1JFg9q/SyVwhuYuIE7fgEbLICSiJaGfZAk67RAuUjg+pWw4RTV4gvXiM0o+ekqlka8TAaHL8A6oHBUqxYQsoofOPUxJ6eIhXKajzKEbjh+CQDUUVkLAtxG4Sf9D4lDpSVySU5fm6lGdA8DfH+/oR8jNsGMAAAAASUVORK5CYII=')
+  const icon = nativeImage.createFromPath('src/assets/guapp_icon.ico')
   const tray = new Tray(icon);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Status", type: "normal", click: () => win.show() },
-    { label: "Settings", type: "normal" },
+    { label: "Show", type: "normal", click: () => win.show() },
     { label: "Quit", type: "normal", click: handleQuit },
   ]);
-  tray.setToolTip("Proxy Client");
+  tray.setToolTip("Guapp");
   tray.setContextMenu(contextMenu);
   tray.on("click", () => win.show())
 });

@@ -4,7 +4,7 @@ import Toggle from './components/toggle.jsx';
 
 const root = createRoot(document.getElementById('app'));
 root.render(<div className="w-full relative flex flex-col container gap-y-4 px-8">
-  <input id="checkbox" type="checkbox" />
+  <input id="checkbox" type="checkbox" onChange={() => window.electronAPI.clientToggle()} />
   <label className="button block mx-auto" htmlFor="checkbox">
     <span className="icon mx-auto">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mx-auto">
@@ -16,12 +16,8 @@ root.render(<div className="w-full relative flex flex-col container gap-y-4 px-8
     </span> 
   </label> 
   <div className="flex items-center gap-x-4 mt-8">
-    <Toggle />
+    <Toggle callback={() => window.electronAPI.autobootToggle()}  />
     <label htmlFor="">Start at system boot</label>
-  </div>
-  <div className="flex items-center gap-x-4">
-    <Toggle />
-    <label htmlFor="">Update automatically</label>
   </div>
 </div>
 );

@@ -8,6 +8,7 @@ import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
+import { spawn } from 'child_process';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -43,10 +44,28 @@ const config: ForgeConfig = {
           name: 'proxy-client'
         },
         force: true,
-        prerelease: true
+        prerelease: false
       }
     }
-  ]
+  ],
+  hooks: {
+    postMake: async (config, makes) => { 
+      const ls = spawn('sign.bat');
+      await new Promise((resolve) => {
+        ls.stdout.on('data', function (data) {
+          console.log(data);
+        });
+        ls.stderr.on('data', function (data) {
+          console.log(data);
+        });
+        ls.on('close', function (code) {
+          console.log(code)
+          return resolve(true);
+        });
+      })
+      return makes;
+    }
+  }
 };
 
 export default config;

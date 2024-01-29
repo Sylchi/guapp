@@ -1,0 +1,1 @@
+AzureSignTool.exe sign -du "https://www.wtfproxy.com" -fd sha384 -kvu https://wtfproxykv.vault.azure.net -kvc ProxyClient --azure-key-vault-managed-identity -tr http://timestamp.digicert.com -td sha384 -v "./out/make/squirrel.windows/x64/proxy-client-0.0.4 Setup.exe"

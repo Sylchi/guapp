@@ -1,12 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Switch } from '@headlessui/react'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Toggle() {
-  const [enabled, setEnabled] = useState(false)
+export default function Toggle({ callback }) {
+  const [enabled, setEnabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(true);
+  }, [])
+
+  useEffect(() => {
+    if(loaded && callback) callback(enabled);
+  }, [enabled])
 
   return (
     <Switch
